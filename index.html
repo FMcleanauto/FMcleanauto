@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FM AUTO - Catalogue</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #3498db;
+      --accent-color: #e74c3c;
+      --light-color: #ffffff;
+      --dark-color: #2c3e50;
+      --text-color: #333333;
+      --border-radius: 8px;
+      --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', 'Roboto', sans-serif;
+      background-color: var(--light-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      background-image: url('LOGO FM CLEAN AUTO.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 0.05;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    header {
+      background: var(--light-color);
+      color: var(--primary-color);
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: var(--box-shadow);
+      position: relative;
+      z-index: 10;
+      border-bottom: 1px solid #eee;
+    }
+
+    .logo-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .logo {
+      max-width: 100px;
+      height: auto;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--primary-color);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .upload-section {
+      background: var(--light-color);
+      border-radius: var(--border-radius);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--box-shadow);
+      text-align: center;
+      border: 1px solid #eee;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .file-input-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: var(--primary-color);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: var(--transition);
+      font-weight: 500;
+      border: none;
+    }
+
+    .file-input-label:hover {
+      background: var(--dark-color);
+      transform: translateY(-2px);
+    }
+
+    #excelFiles {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+
+    .search-container {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
+    #search {
+      width: 100%;
+      padding: 1rem 1.5rem 1rem 3rem;
+      border: 1px solid #ddd;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      transition: var(--transition);
+      background-color: var(--light-color);
+    }
+
+    #search:focus {
+      border-color: var(--secondary-color);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 1.2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--primary-color);
+    }
+
+    .status-message {
+      text-align: center;
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      font-weight: 500;
+      background-color: #f8f9fa;
+      border: 1px solid #eee;
+    }
+
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      padding: 2rem;
+      display: none;
+      background-color: var(--light-color);
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      margin: 1rem 0;
+      border: 1px solid #eee;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(44, 62, 80, 0.1);
+      border-radius: 50%;
+      border-top-color: var(--primary-color);
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .parts-table-container {
+      overflow-x: auto;
+      background: var(--light-color);
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      margin-top: 1rem;
+      display: none;
+      border: 1px solid #eee;
+    }
+
+    #partsTable {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    #partsTable th {
+      background: var(--primary-color);
+      color: white;
+      padding: 1rem;
+      text-align: left;
+      position: sticky;
+      top: 0;
+    }
+
+    #partsTable td {
+      padding: 1rem;
+      border-bottom: 1px solid #eee;
+      vertical-align: middle;
+    }
+
+    #partsTable tr:last-child td {
+      border-bottom: none;
+    }
+
+    #partsTable tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    /* تحسين حجم ووضوح الصور */
+    .part-image-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-width: 150px;
+    }
+
+    .part-image {
+      width: 120px;
+      height: 120px;
+      object-fit: contain;
+      border-radius: 4px;
+      background: #f5f5f5;
+      padding: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
+    }
+
+    .part-image:hover {
+      transform: scale(1.8);
+      z-index: 10;
+      position: relative;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 2rem;
+      color: #7f8c8d;
+      display: none;
+      background-color: var(--light-color);
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      margin: 1rem 0;
+      border: 1px solid #eee;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.9);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-logo {
+      max-width: 200px;
+      height: auto;
+      margin-bottom: 2rem;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .modal-message {
+      font-size: 1.5rem;
+      color: var(--primary-color);
+      font-weight: 500;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    /* زر تكبير الصورة */
+    .zoom-btn {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      background: rgba(0,0,0,0.5);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 25px;
+      height: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .part-image-container:hover .zoom-btn {
+      opacity: 1;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 0.5rem;
+      }
+      
+      header {
+        padding: 1rem;
+      }
+      
+      h1 {
+        font-size: 1.5rem;
+      }
+      
+      .upload-section {
+        padding: 1rem;
+      }
+      
+      #partsTable th, 
+      #partsTable td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.9rem;
+      }
+      
+      .part-image {
+        width: 80px;
+        height: 80px;
+      }
+
+      .modal-logo {
+        max-width: 150px;
+      }
+
+      .modal-message {
+        font-size: 1.2rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .logo-container {
+        flex-direction: column;
+      }
+      
+      .file-input-label {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+      }
+      
+      #search {
+        padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+      }
+      
+      .search-icon {
+        left: 0.8rem;
+      }
+
+      .modal-logo {
+        max-width: 120px;
+      }
+
+      .modal-message {
+        font-size: 1rem;
+        padding: 0 1rem;
+      }
+
+      .part-image {
+        width: 60px;
+        height: 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Modal for file upload -->
+  <div class="modal" id="uploadModal">
+    <img src="LOGO FM CLEAN AUTO.png" alt="FM AUTO Logo" class="modal-logo">
+    <div class="modal-message">Chargement du fichier en cours...</div>
+  </div>
+
+  <header>
+    <div class="logo-container">
+      <img src="LOGO FM CLEAN AUTO.png" alt="FM AUTO Logo" class="logo">
+      <h1>Catalogue FM AUTO</h1>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="upload-section">
+      <div class="file-input-wrapper">
+        <label for="excelFiles" class="file-input-label">
+          <i class="fas fa-file-excel"></i>
+          Choisir un fichier Excel
+        </label>
+        <input type="file" id="excelFiles" accept=".xlsx,.xls" multiple>
+      </div>
+      
+      <div class="search-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" id="search" placeholder="Rechercher par référence ou nom..." disabled>
+      </div>
+      
+      <div class="status-message" id="statusMessage">
+        <i class="fas fa-info-circle"></i> Veuillez charger un fichier Excel pour commencer
+      </div>
+    </div>
+    
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div>Analyse des données...</div>
+    </div>
+    
+    <div class="parts-table-container" id="tableContainer">
+      <table id="partsTable">
+        <thead>
+          <tr>
+            <th>Référence</th>
+            <th>Désignation FR</th>
+            <th>Désignation EN</th>
+            <th>Image</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    
+    <div class="no-results" id="noResults">
+      <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 1rem; color: var(--primary-color);"></i>
+      <h3>Aucun résultat trouvé</h3>
+      <p>Essayez avec d'autres termes de recherche</p>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    // Elements
+    const input = document.getElementById('excelFiles');
+    const searchInput = document.getElementById('search');
+    const tableBody = document.querySelector('#partsTable tbody');
+    const tableContainer = document.getElementById('tableContainer');
+    const noResultsDiv = document.getElementById('noResults');
+    const loadingDiv = document.getElementById('loading');
+    const statusMessage = document.getElementById('statusMessage');
+    const uploadModal = document.getElementById('uploadModal');
+    
+    // Data
+    let allRows = [];
+    
+    // File input change handler
+    input.addEventListener('change', async (e) => {
+      allRows = [];
+      tableBody.innerHTML = "";
+      tableContainer.style.display = "none";
+      noResultsDiv.style.display = "none";
+      loadingDiv.style.display = "none";
+      
+      // Show modal
+      uploadModal.style.display = "flex";
+      statusMessage.textContent = "Début du traitement du fichier...";
+      
+      try {
+        // Small delay to show the modal
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        for (const file of e.target.files) {
+          statusMessage.textContent = `Traitement du fichier: ${file.name}...`;
+          
+          const data = await file.arrayBuffer();
+          const workbook = XLSX.read(data);
+          
+          workbook.SheetNames.forEach(sheet => {
+            const worksheet = workbook.Sheets[sheet];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+            
+            jsonData.forEach(row => {
+              // Handle different possible column names
+              const reference = row['Référence'] || row['reference'] || row['REF'] || "";
+              const fr = row['Designation_FR'] || row['designation_fr'] || row['Nom FR'] || "";
+              const en = row['Designation_EN'] || row['designation_en'] || row['Nom EN'] || "";
+              const image = row['Image'] || row['image'] || "";
+              
+              if (reference) {
+                let imageUrl = image;
+                // Fix Excel formula images
+                if (imageUrl.startsWith('="images/') && imageUrl.endsWith('.jpg"')) {
+                  imageUrl = imageUrl.replace(/^="|"$/g, '');
+                }
+                
+                allRows.push({
+                  ref: reference.toString().trim(),
+                  fr: fr.toString().trim(),
+                  en: en.toString().trim(),
+                  image: imageUrl.toString().trim()
+                });
+              }
+            });
+          });
+        }
+        
+        if (allRows.length > 0) {
+          searchInput.disabled = false;
+          searchInput.focus();
+          statusMessage.innerHTML = `<i class="fas fa-check-circle" style="color: #27ae60;"></i> ${allRows.length} pièces chargées. Commencez à rechercher.`;
+          console.log("Data loaded:", allRows.length, "rows");
+        } else {
+          statusMessage.innerHTML = `<i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i> Aucune donnée valide trouvée dans le fichier.`;
+        }
+      } catch (error) {
+        console.error("Error loading file:", error);
+        statusMessage.innerHTML = `<i class="fas fa-times-circle" style="color: #e74c3c;"></i> Erreur lors du chargement du fichier: ${error.message}`;
+      } finally {
+        // Hide modal after a short delay to show the animation
+        setTimeout(() => {
+          uploadModal.style.display = "none";
+          loadingDiv.style.display = "none";
+        }, 500);
+      }
+    });
+
+    // Display results function
+    function displayRows(rows) {
+      tableBody.innerHTML = "";
+      
+      if (rows.length === 0) {
+        tableContainer.style.display = "none";
+        noResultsDiv.style.display = "block";
+        return;
+      }
+      
+      noResultsDiv.style.display = "none";
+      
+      rows.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${row.ref}</strong></td>
+          <td>${row.fr}</td>
+          <td>${row.en}</td>
+          <td class="part-image-container">
+            <img src="${row.image}" class="part-image" onerror="this.style.display='none';">
+          </td>
+        `;
+        tableBody.appendChild(tr);
+      });
+      
+      tableContainer.style.display = "block";
+    }
+
+    // Search input handler
+    searchInput.addEventListener('input', () => {
+      if (allRows.length === 0) {
+        console.log("No data available for search");
+        return;
+      }
+      
+      const keyword = searchInput.value.toLowerCase().trim();
+      
+      if (!keyword) {
+        tableContainer.style.display = "none";
+        noResultsDiv.style.display = "none";
+        statusMessage.innerHTML = `<i class="fas fa-info-circle"></i> ${allRows.length} pièces disponibles. Tapez pour rechercher.`;
+        return;
+      }
+      
+      console.log("Searching for:", keyword);
+      
+      const filtered = allRows.filter(row =>
+        (row.ref && row.ref.toLowerCase().includes(keyword)) ||
+        (row.fr && row.fr.toLowerCase().includes(keyword)) ||
+        (row.en && row.en.toLowerCase().includes(keyword))
+      );
+      
+      console.log("Found results:", filtered.length);
+      displayRows(filtered);
+      
+      // Update status message
+      if (filtered.length > 0) {
+        statusMessage.innerHTML = `<i class="fas fa-check-circle" style="color: #27ae60;"></i> ${filtered.length} résultat(s) trouvé(s) pour "${keyword}"`;
+      } else {
+        statusMessage.innerHTML = `<i class="fas fa-search" style="color: #e74c3c;"></i> Aucun résultat pour "${keyword}"`;
+      }
+    });
+
+    // Initialize
+    searchInput.disabled = true;
+  </script>
+</body>
+</html>
