@@ -1,3 +1,4 @@
+// register.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
@@ -21,7 +22,8 @@ document.getElementById("registerForm").addEventListener("submit", (e) => {
   createUserWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       document.getElementById("message").textContent = "تم إنشاء الحساب بنجاح!";
-      window.location.href = "login.html";
+      // ✅ الانتقال إلى الصفحة الرئيسية مباشرة
+      window.location.href = "index.html";
     })
     .catch((error) => {
       document.getElementById("message").textContent = "خطأ: " + error.message;
