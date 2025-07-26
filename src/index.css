@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* تحسينات للهواتف المحمولة */
+@layer utilities {
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .safe-area-inset {
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+}
+
+/* تحسينات عامة للهواتف */
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
+}
+
+/* تحسين التمرير */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* تحسين الأزرار للمس */
+button, input[type="checkbox"], input[type="file"] {
+  touch-action: manipulation;
+}
+
+/* تحسين النصوص للشاشات الصغيرة */
+@media (max-width: 640px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+/* تحسين التركيز للوحة المفاتيح */
+input:focus, button:focus, select:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* إخفاء شريط التمرير في الهواتف */
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+/* تحسين الصور للهواتف */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* تحسين النماذج للهواتف */
+input, select, textarea {
+  font-size: 16px; /* منع التكبير في iOS */
+}
+
+@media (max-width: 640px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
