@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commande de pièces détachées / طلب قطع غيار</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .lang-switcher {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .lang-btn {
+            background-color: #e7e7e7;
+            border: none;
+            padding: 5px 10px;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        .lang-btn.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+            display: block;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            text-align: center;
+        }
+        .total-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f2f2f2;
+            border-radius: 5px;
+            text-align: left;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        [lang="ar"] {
+            direction: rtl;
+            text-align: right;
+        }
+        [lang="ar"] table {
+            direction: rtl;
+        }
+        [lang="ar"] .total-section {
+            text-align: right;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-weight: bold;
+        }
+        .reload-btn {
+            background-color: #2196F3;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .search-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .search-input {
+            padding: 8px;
+            width: 300px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="lang-switcher">
+            <button class="lang-btn active" onclick="switchLanguage('fr')">Français</button>
+            <button class="lang-btn" onclick="switchLanguage('ar')">العربية</button>
+        </div>
+        
+        <h1 lang="fr">Commande de pièces détachées</h1>
+        <h1 lang="ar" style="display:none">طلب قطع غيار</h1>
+        
+        <div class="search-container" lang="fr" style="display:block">
+            <input type="text" id="searchInput" class="search-input" placeholder="Rechercher par référence ou désignation..." onkeyup="filterProducts()">
+        </div>
+        <div class="search-container" lang="ar" style="display:none">
+            <input type="text" id="searchInputAr" class="search-input" placeholder="ابحث بالرقم المرجعي أو الوصف..." onkeyup="filterProducts()">
+        </div>
+        
+        <div id="loading" class="loading" lang="fr">
+            Chargement des données en cours...
+            <button class="reload-btn" onclick="loadExcelAutomatically()">Actualiser</button>
+        </div>
+        <div id="loading" class="loading" lang="ar" style="display:none">
+            جاري تحميل البيانات...
+            <button class="reload-btn" onclick="loadExcelAutomatically()">تحديث</button>
+        </div>
+        
+        <div style="overflow-x:auto;">
+            <table id="partsTable" style="display:none">
+                <thead>
+                    <tr lang="fr">
+                        <th>Référence</th>
+                        <th>Désignation</th>
+                        <th>Prix Gros</th>
+                        <th>Marque</th>
+                        <th>Quantité</th>
+                        <th>Total piece</th>
+                    </tr>
+                    <tr lang="ar" style="display:none">
+                        <th>الرقم المرجعي</th>
+                        <th>الوصف</th>
+                        <th>السعر</th>
+                        <th>العلامة التجارية</th>
+                        <th>الكمية</th>
+                        <th>المجموع</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- سيتم ملء هذا القسم بواسطة JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="total-section" lang="fr" style="display:block">
+            <h3>Total Général: <span id="grandTotal">0</span> DA</h3>
+        </div>
+        <div class="total-section" lang="ar" style="display:none">
+            <h3>المجموع الكلي: <span id="grandTotalAr">0</span> د.ج</h3>
+        </div>
+        
+        <button class="btn" id="downloadBtn" lang="fr" style="display:block" onclick="downloadOrder()" disabled>Télécharger la commande</button>
+        <button class="btn" id="downloadBtnAr" lang="ar" style="display:none" onclick="downloadOrder()" disabled>تحميل الطلب</button>
+    </div>
+
+    <script>
+        // بيانات قطع الغيار
+        let partsData = [];
+        let filteredData = [];
+        let workbook = null;
+
+        // تبديل اللغة
+        function switchLanguage(lang) {
+            // إخفاء جميع العناصر
+            document.querySelectorAll('[lang="fr"]').forEach(el => {
+                if (el.style) el.style.display = 'none';
+            });
+            document.querySelectorAll('[lang="ar"]').forEach(el => {
+                if (el.style) el.style.display = 'none';
+            });
+            
+            // إظهار العناصر للغة المحددة
+            document.querySelectorAll(`[lang="${lang}"]`).forEach(el => {
+                if (el.style) {
+                    el.style.display = lang === 'ar' ? 'block' : 'table-row';
+                    if (el.tagName === 'TR') el.style.display = 'table-row';
+                }
+            });
+            
+            // تحديث أزرار اللغة
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // ملء الجدول بالبيانات
+        const tableBody = document.getElementById("tableBody");
+        const grandTotalElement = document.getElementById("grandTotal");
+        const grandTotalElementAr = document.getElementById("grandTotalAr");
+        
+        function renderTable(data = partsData) {
+            tableBody.innerHTML = "";
+            let grandTotal = 0;
+            
+            data.forEach(part => {
+                // تخطي الصفوف الفارغة
+                if ((!part.Référence || part.Référence.trim() === '') && 
+                    (!part.Désignation || part.Désignation.trim() === '')) return;
+                
+                const row = document.createElement("tr");
+                
+                // إضافة خلايا الصف
+                row.innerHTML = `
+                    <td>${part.Référence || part.reference || ''}</td>
+                    <td>${part.Désignation || part.designation || ''}</td>
+                    <td>${part['Prix Gros'] || part.price || 0} DA</td>
+                    <td>${part.Marque || part.brand || ''}</td>
+                    <td><input type="number" min="0" value="0" onchange="updateTotal(this, ${part['Prix Gros'] || part.price || 0})"></td>
+                    <td class="part-total">0 DA</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            grandTotalElement.textContent = grandTotal;
+            grandTotalElementAr.textContent = grandTotal;
+            
+            // إظهار الجدول وإخفاء رسالة التحميل
+            if (data.length > 0) {
+                document.getElementById("partsTable").style.display = "table";
+                document.querySelectorAll("#loading").forEach(el => el.style.display = "none");
+                
+                // تمكين زر التحميل
+                document.getElementById("downloadBtn").disabled = false;
+                document.getElementById("downloadBtnAr").disabled = false;
+            }
+        }
+        
+        // تصفية المنتجات حسب البحث
+        function filterProducts() {
+            const isFrench = document.querySelector('[lang="fr"]').style.display !== 'none';
+            const searchInput = isFrench ? 
+                document.getElementById("searchInput").value.toLowerCase() :
+                document.getElementById("searchInputAr").value.toLowerCase();
+            
+            if (searchInput === '') {
+                filteredData = [...partsData];
+                renderTable();
+                return;
+            }
+            
+            filteredData = partsData.filter(part => {
+                const ref = (part.Référence || '').toString().toLowerCase();
+                const des = (part.Désignation || '').toString().toLowerCase();
+                return ref.includes(searchInput) || des.includes(searchInput);
+            });
+            
+            renderTable(filteredData);
+        }
+        
+        // تحديث المجموع عند تغيير الكمية
+        function updateTotal(input, price) {
+            const quantity = parseInt(input.value) || 0;
+            const total = quantity * price;
+            const row = input.parentNode.parentNode;
+            const totalCell = row.querySelector(".part-total");
+            
+            // تحديث القيم لكلتا اللغتين
+            totalCell.textContent = `${total} DA`;
+            
+            calculateGrandTotal();
+        }
+        
+        // حساب المجموع الكلي
+        function calculateGrandTotal() {
+            let grandTotal = 0;
+            const totalCells = document.querySelectorAll(".part-total");
+            
+            totalCells.forEach(cell => {
+                const totalText = cell.textContent.replace(" DA", "");
+                const total = parseInt(totalText) || 0;
+                grandTotal += total;
+            });
+            
+            grandTotalElement.textContent = grandTotal;
+            grandTotalElementAr.textContent = grandTotal;
+        }
+        
+        // تحميل الطلب كملف Excel
+        function downloadOrder() {
+            const isFrench = document.querySelector('[lang="fr"]').style.display !== 'none';
+            
+            // إنشاء مصفوفة للبيانات المطلوبة
+            const orderData = [];
+            
+            // إضافة العناوين
+            if (isFrench) {
+                orderData.push(["Référence", "Désignation", "Quantité", "Prix Gros", "Total piece", "Marque"]);
+            } else {
+                orderData.push(["الرقم المرجعي", "الوصف", "الكمية", "السعر", "المجموع", "العلامة التجارية"]);
+            }
+            
+            // إضافة البيانات
+            const rows = document.querySelectorAll("#tableBody tr");
+            rows.forEach(row => {
+                const reference = row.cells[0].textContent;
+                const designation = row.cells[1].textContent;
+                const quantity = row.cells[4].querySelector("input").value;
+                const price = row.cells[2].textContent.replace(" DA", "");
+                const total = row.cells[5].textContent.replace(" DA", "");
+                const brand = row.cells[3].textContent;
+                
+                if (parseInt(quantity) > 0) {
+                    orderData.push([reference, designation, quantity, price, total, brand]);
+                }
+            });
+            
+            // إضافة المجموع الكلي
+            if (isFrench) {
+                orderData.push([], ["Total Général:", "", "", "", grandTotalElement.textContent]);
+            } else {
+                orderData.push([], ["المجموع الكلي:", "", "", "", grandTotalElementAr.textContent]);
+            }
+            
+            // إنشاء ورقة عمل Excel
+            const ws = XLSX.utils.aoa_to_sheet(orderData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Commande");
+            
+            // تحميل الملف
+            XLSX.writeFile(wb, isFrench ? "commande_pieces.xlsx" : "طلب_قطع_غيار.xlsx");
+        }
+        
+        // دالة لتحميل ملف Excel تلقائياً من GitHub
+        async function loadExcelAutomatically() {
+            const loadingElements = document.querySelectorAll("#loading");
+            const isFrench = document.querySelector('[lang="fr"]').style.display !== 'none';
+            
+            try {
+                // تحديث رسالة التحميل
+                loadingElements.forEach(el => {
+                    el.innerHTML = el.getAttribute('lang') === 'fr' ? 
+                        "Chargement du fichier Excel..." : 
+                        "جاري تحميل ملف Excel...";
+                });
+                
+                // مسار الملف في GitHub
+                const excelUrl = 'nouvelle_arrivage_FM.xls';
+                
+                const response = await fetch(excelUrl);
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const arrayBuffer = await response.arrayBuffer();
+                const data = new Uint8Array(arrayBuffer);
+                workbook = XLSX.read(data, { type: 'array' });
+                
+                // معالجة البيانات - قراءة كل الصفوف
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                // قراءة جميع الصفوف بما فيها الفارغة
+                partsData = XLSX.utils.sheet_to_json(worksheet, { defval: '', blankrows: true });
+                
+                // تصفية الصفوف الفارغة تماماً
+                partsData = partsData.filter(row => 
+                    (row.Référence && row.Référence.toString().trim() !== '') || 
+                    (row.Désignation && row.Désignation.toString().trim() !== '')
+                );
+                
+                filteredData = [...partsData];
+                
+                renderTable();
+                
+                // تحديث رسالة التحميل
+                loadingElements.forEach(el => {
+                    el.innerHTML = el.getAttribute('lang') === 'fr' ? 
+                        `${partsData.length} produits chargés avec succès <button class="reload-btn" onclick="loadExcelAutomatically()">Actualiser</button>` : 
+                        `${partsData.length} منتجات محملة بنجاح <button class="reload-btn" onclick="loadExcelAutomatically()">تحديث</button>`;
+                });
+                
+                console.log("Données chargées:", partsData);
+                
+            } catch (error) {
+                console.error('Error loading Excel file:', error);
+                loadingElements.forEach(el => {
+                    el.innerHTML = el.getAttribute('lang') === 'fr' ? 
+                        `Erreur de chargement du fichier Excel <button class="reload-btn" onclick="loadExcelAutomatically()">Réessayer</button>` : 
+                        `خطأ في تحميل ملف Excel <button class="reload-btn" onclick="loadExcelAutomatically()">إعادة المحاولة</button>`;
+                });
+                
+                // استخدام بيانات افتراضية في حالة الفشل
+                partsData = [
+                    { Référence: "H30031", Désignation: "PALIER CENTRAL TIGUAN/Q3 (5N0521101E) HBK", "Prix Gros": 6250, Marque: "HBK" },
+                    { Référence: "H70014", Désignation: "POMPE A EAU G2/G3 5VTS HBK", "Prix Gros": 3300, Marque: "HBK" },
+                    { Référence: "H80315", Désignation: "PORTE FILTRE A HUILE G6/CAD/TIG/PST HBK", "Prix Gros": 6800, Marque: "HBK" },
+                    { Référence: "H80277", Désignation: "PORT FIL HUI G7 LEON A3 OCT TIG 2.0TDI +2013 03N115389A", "Prix Gros": 950, Marque: "HBK" },
+                    { Référence: "H90093", Désignation: "KIT CHAINE FABIA 1.2 NV 12+ HBK", "Prix Gros": 9500, Marque: "HBK" }
+                ];
+                filteredData = [...partsData];
+                renderTable();
+            }
+        }
+        
+        // بدء التحميل التلقائي عند فتح الصفحة
+        window.onload = function() {
+            loadExcelAutomatically();
+        };
+    </script>
+</body>
+</html>
